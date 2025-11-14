@@ -4,3 +4,14 @@ body {
   text-align: center;
   padding: 50px;
 }
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.hint {
+  color: #777;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
