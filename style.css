@@ -49,3 +49,16 @@ body {
 .mermaid-mindmap {
   background-color: #C9E4DE; /* Mint Green */
 }
+
+.logo-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.05));
+}
