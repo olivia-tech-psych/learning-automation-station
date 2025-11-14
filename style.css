@@ -15,3 +15,37 @@ body {
   font-size: 0.9rem;
   margin-top: 8px;
 }
+
+.button-group {
+  margin-top: 20px;
+}
+
+.btn {
+  display: block;
+  width: 220px;
+  margin: 8px auto;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Pastel colors */
+.visual-notes {
+  background-color: #DBCDF0; /* Lavender */
+}
+
+.knowledge-graph {
+  background-color: #C6DEF1; /* Light Sky Blue */
+}
+
+.mermaid-mindmap {
+  background-color: #C9E4DE; /* Mint Green */
+}
