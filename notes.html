@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visual Notes</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Visual Notes</h1>
+    <div id="result" class="result-box">
+      <p>Generating your visual notes... ⏳</p>
+    </div>
+    <button class="btn back-btn" onclick="window.history.back()">← Back to Upload</button>
+  </div>
+
+  <style>
+    .result-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .back-btn {
+      background-color: #F2C6DE; /* Blush Pink */
+      margin-top: 20px;
+    }
+  </style>
+
+  <script>
+    const text = localStorage.getItem('pdfText');
+    if (!text) {
+      document.getElementById('result').innerHTML = '<p>⚠️ No PDF text found. Please go back and upload a chapter.</p>';
+    } else {
+      puter.ai.chat(
+        `Create concise, visually engaging study notes from this text. Use bullet points, simple emojis, and short headings. Do not include markdown or code blocks.\n\nText:\n${text}`,
+        { model: "qwen/qwen3-14b:free" }
+      ).then(response => {
+        document.getElementById('result').textContent = response;
+      }).catch(err => {
+        document.getElementById('result').innerHTML = `<p>❌ AI generation failed: ${err.message}</p>`;
+      });
+    }
+  </script>
+</body>
+</html>
