@@ -14,38 +14,111 @@
       <p>Generating your visual notes... ⏳</p>
     </div>
     <button class="btn back-btn" onclick="window.history.back()">← Back to Upload</button>
+    <button class="btn save-pdf-btn">📥 Save as PDF</button>
   </div>
 
   <style>
-    .result-box {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      font-family: 'Segoe UI', sans-serif;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-    .back-btn {
-      background-color: #F2C6DE; /* Blush Pink */
-      margin-top: 20px;
-    }
+  body {
+    background-color: #F2C6DE; /* Blush Pink */
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #333;
+    padding: 20px;
+    margin: 0;
+  }
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .result-box {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    margin: 20px auto;
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    text-align: left;
+  }
+  .result-box h1, .result-box h2, .result-box h3 {
+    color: #555;
+    margin-top: 1.2em;
+  }
+  .result-box ul, .result-box ol {
+    padding-left: 20px;
+    margin: 12px 0;
+  }
+  .result-box li {
+    margin-bottom: 6px;
+  }
+  .result-box strong {
+    color: #DBCDF0; /* Lavender */
+  }
+  .back-btn {
+    background-color: #DBCDF0; /* Lavender */
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .back-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .save-pdf-btn {
+    background-color: #F7D9C4; /* Peach */
+    margin-top: 20px;
+  }
+
+  @media print {
+  body * {
+    visibility: visible;
+  }
+
+  button,
+  .button {
+    visibility: hidden;
+  }
+}
   </style>
 
-  <script>
-    const text = localStorage.getItem('pdfText');
-    if (!text) {
-      document.getElementById('result').innerHTML = '<p>⚠️ No PDF text found. Please go back and upload a chapter.</p>';
-    } else {
-      puter.ai.chat(
-        `Create concise, visually engaging study notes from this text. Use bullet points, simple emojis, and short headings. Do not include markdown or code blocks.\n\nText:\n${text}`,
-        { model: "qwen/qwen3-14b:free" }
-      ).then(response => {
-        document.getElementById('result').textContent = response;
-      }).catch(err => {
-        document.getElementById('result').innerHTML = `<p>❌ AI generation failed: ${err.message}</p>`;
-      });
-    }
-  </script>
+<script>
+  const text = localStorage.getItem('pdfText');
+  if (!text) {
+    document.getElementById('result').innerHTML = '<p>⚠️ No PDF text found. Please go back and upload a chapter.</p>';
+  } else {
+    puter.ai.chat(
+      `Create concise, visually engaging study notes from this text. Use bullet points, simple emojis, and short headings. Do not include markdown or code blocks.\n\nText:\n${text}`,
+      { model: "qwen/qwen3-14b:free" }
+    ).then(response => {
+      // ✅ Extract the actual text
+      const aiText = response?.message?.content || response;
+
+      // ✨ Format as HTML
+      let html = aiText
+        .replace(/(#{1,3})\s*(.+?)(\n|$)/g, (match, hashes, content) => {
+          const level = hashes.length;
+          return `<h${level}>${content.trim()}</h${level}>`;
+        })
+        .replace(/^\s*-\s+(.+)$/gm, '<li>$1</li>')
+        .replace(/(?:<li>.*<\/li>\s*){2,}/g, match => `<ul>${match}</ul>`)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+
+      document.getElementById('result').innerHTML = html;
+    }).catch(err => {
+      console.error("AI error:", err);
+      document.getElementById('result').innerHTML = `<p>❌ AI generation failed: ${err.message || err}</p>`;
+    });
+  }
+  // Save as PDF using browser print
+  document.querySelector('.save-pdf-btn').addEventListener('click', () => {
+    window.print();
+  });
+</script>
 </body>
 </html>
