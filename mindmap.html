@@ -70,17 +70,15 @@
       background-color: #F7D9C4; /* Peach */
     }
     @media print {
-      body * { visibility: hidden; }
-      .flowchart-box, .flowchart-box * { visibility: visible; }
-      .flowchart-box {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        box-shadow: none;
-      }
-    }
+  body * {
+    visibility: visible;
+  }
+
+  button,
+  .button {
+    visibility: hidden;
+  }
+}
   </style>
 </head>
 <body>

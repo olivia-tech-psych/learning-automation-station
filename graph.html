@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Knowledge Graph</title>
+  <title>🌐 Knowledge Graph</title>
   <script src="https://js.puter.com/v2/"></script>
   <style>
     body {
-      background-color: #F2C6DE;
+      background-color: #F2C6DE; /* Blush Pink */
       font-family: 'Segoe UI', sans-serif;
       color: #333;
       padding: 20px;
@@ -18,36 +18,60 @@
       margin: 0 auto;
       text-align: center;
     }
-    .result-box {
+    .graph-box {
       background: white;
       border-radius: 16px;
       padding: 25px;
       margin: 20px auto;
       font-family: 'Segoe UI', sans-serif;
-      line-height: 1.6;
+      line-height: 1.7;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
       text-align: left;
     }
-    .back-btn {
+    .relation-item {
+      margin: 12px 0;
+      padding: 10px;
+      background-color: #fbfbfb;
+      border-left: 4px solid #C6DEF1; /* Sky Blue */
+      border-radius: 0 8px 8px 0;
+    }
+    .subject {
+      font-weight: 600;
+      color: #555;
+    }
+    .predicate {
+      color: #DBCDF0; /* Lavender */
+      padding: 0 6px;
+    }
+    .object {
+      font-style: italic;
+      color: #777;
+    }
+    .btn {
       background-color: #C6DEF1; /* Sky Blue */
       color: #333;
       border: none;
       padding: 10px 20px;
       border-radius: 10px;
       font-weight: 600;
-      margin-top: 16px;
+      margin: 8px;
       cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
     }
     .save-pdf-btn {
-  background-color: #F7D9C4; /* Peach */
-  color: #333;
+      background-color: #F7D9C4; /* Peach */
+      color: #333;
       border: none;
       padding: 10px 20px;
       border-radius: 10px;
       font-weight: 600;
-      margin-top: 16px;
+      margin: 8px;
       cursor: pointer;
-}
+      transition: transform 0.15s;
+    }
     @media print {
   body * {
     visibility: visible;
@@ -63,28 +87,61 @@
 <body>
   <div class="container">
     <h1>🌐 Knowledge Graph</h1>
-    <div class="result-box" id="result">Generating knowledge graph... ⏳</div>
-    <button class="back-btn" onclick="window.history.back()">← Back to Upload</button>
+    <div class="graph-box" id="result">Generating knowledge graph... ⏳</div>
+    <button class="btn back-btn" onclick="window.history.back()">← Back to Upload</button>
     <button class="btn save-pdf-btn">📥 Save as PDF</button>
+  </div>
 
   <script>
+    // Save as PDF
+    document.querySelector('.save-pdf-btn').addEventListener('click', () => {
+      window.print();
+    });
+
+    // Get PDF text
     const text = localStorage.getItem('pdfText');
+    const resultEl = document.getElementById('result');
+
     if (!text) {
-      document.getElementById('result').innerHTML = '<p>⚠️ No PDF text found.</p>';
+      resultEl.innerHTML = '<p>⚠️ No PDF text found. Please go back and upload a chapter.</p>';
     } else {
+      // 🔥 Ask for clean (A) → (B) pairs
       puter.ai.chat(
-        `Extract key concepts and relationships from this text as a list of triples in the format: (subject, predicate, object). Only output the list, nothing else.\n\nText:\n${text}`,
-        { model: "qwen/qwen3-14b:free" }
+        `Extract key relationships from this text as a list of directional statements.
+         Format each as: "📚 SUBJECT → PREDICATE → OBJECT"
+         - Use emojis in every line
+         - One relationship per line
+         - Only output the list, nothing else
+         \n\nText:\n${text}`,
+        { model: "qwen/qwen-turbo" }
       ).then(response => {
         const aiText = response?.message?.content || response;
-        document.getElementById('result').innerHTML = `<pre>${aiText}</pre>`;
+        const lines = aiText.split('\n').filter(line => line.trim() !== '');
+        let html = '';
+
+        for (const line of lines) {
+          // Try to split by " → "
+          const parts = line.split(' → ').map(p => p.trim());
+          if (parts.length === 3) {
+            const [subject, predicate, object] = parts;
+            html += `
+              <div class="relation-item">
+                <span class="subject">${subject}</span>
+                <span class="predicate">→ ${predicate} →</span>
+                <span class="object">${object}</span>
+              </div>`;
+          } else {
+            // Fallback: treat as plain line
+            html += `<div class="relation-item">${line}</div>`;
+          }
+        }
+
+        resultEl.innerHTML = html || '<p>💡 No relationships found.</p>';
       }).catch(err => {
-        document.getElementById('result').innerHTML = `<p>❌ AI generation failed: ${err.message || err}</p>`;
+        const msg = err?.message || err?.error?.message || JSON.stringify(err);
+        resultEl.innerHTML = `<p>❌ Graph failed: ${msg}</p>`;
       });
     }
-    document.querySelector('.save-pdf-btn').addEventListener('click', () => {
-  window.print();
-});
   </script>
 </body>
 </html>
