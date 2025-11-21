@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Knowledge Graph</title>
+  <script src="https://js.puter.com/v2/"></script>
+  <style>
+    body {
+      background-color: #F2C6DE;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .result-box {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      margin: 20px auto;
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      text-align: left;
+    }
+    .back-btn {
+      background-color: #C6DEF1; /* Sky Blue */
+      color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+    .save-pdf-btn {
+  background-color: #F7D9C4; /* Peach */
+  color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      margin-top: 16px;
+      cursor: pointer;
+}
+    @media print {
+  body * {
+    visibility: visible;
+  }
+
+  button,
+  .button {
+    visibility: hidden;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌐 Knowledge Graph</h1>
+    <div class="result-box" id="result">Generating knowledge graph... ⏳</div>
+    <button class="back-btn" onclick="window.history.back()">← Back to Upload</button>
+    <button class="btn save-pdf-btn">📥 Save as PDF</button>
+
+  <script>
+    const text = localStorage.getItem('pdfText');
+    if (!text) {
+      document.getElementById('result').innerHTML = '<p>⚠️ No PDF text found.</p>';
+    } else {
+      puter.ai.chat(
+        `Extract key concepts and relationships from this text as a list of triples in the format: (subject, predicate, object). Only output the list, nothing else.\n\nText:\n${text}`,
+        { model: "qwen/qwen3-14b:free" }
+      ).then(response => {
+        const aiText = response?.message?.content || response;
+        document.getElementById('result').innerHTML = `<pre>${aiText}</pre>`;
+      }).catch(err => {
+        document.getElementById('result').innerHTML = `<p>❌ AI generation failed: ${err.message || err}</p>`;
+      });
+    }
+    document.querySelector('.save-pdf-btn').addEventListener('click', () => {
+  window.print();
+});
+  </script>
+</body>
+</html>

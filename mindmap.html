@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧠 Flowchart Mindmap</title>
+  <script src="https://js.puter.com/v2/"></script>
+  <style>
+    body {
+      background-color: #F2C6DE; /* Blush Pink */
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .flowchart-box {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin: 20px auto;
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      text-align: left;
+    }
+    .flowchart-node {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid #C9E4DE; /* Mint Green */
+      background-color: #fbfbfb;
+      border-radius: 0 8px 8px 0;
+    }
+    .flowchart-node.level-0 {
+      border-left-color: #F7D9C4; /* Peach */
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .flowchart-node.level-1 {
+      border-left-color: #DBCDF0; /* Lavender */
+      margin-left: 20px;
+    }
+    .flowchart-node.level-2 {
+      border-left-color: #C6DEF1; /* Sky Blue */
+      margin-left: 40px;
+    }
+    .flowchart-node.level-3 {
+      border-left-color: #C9E4DE; /* Mint Green */
+      margin-left: 60px;
+    }
+    .btn {
+      background-color: #C9E4DE;
+      color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      margin: 8px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .save-pdf-btn {
+      background-color: #F7D9C4; /* Peach */
+    }
+    @media print {
+      body * { visibility: hidden; }
+      .flowchart-box, .flowchart-box * { visibility: visible; }
+      .flowchart-box {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Flowchart Mindmap</h1>
+    <div class="flowchart-box" id="result">Generating mindmap... ⏳</div>
+    <button class="btn back-btn" onclick="window.history.back()">← Back to Upload</button>
+    <button class="btn save-pdf-btn">📥 Save as PDF</button>
+  </div>
+
+  <script>
+    // Save as PDF
+    document.querySelector('.save-pdf-btn').addEventListener('click', () => {
+      window.print();
+    });
+
+    // Get PDF text
+    const text = localStorage.getItem('pdfText');
+    const resultEl = document.getElementById('result');
+
+    if (!text) {
+      resultEl.innerHTML = '<p>⚠️ No PDF text found. Please go back and upload a chapter.</p>';
+    } else {
+      // 🔥 Ask for a bullet list — much more reliable!
+      puter.ai.chat(
+        `Create a hierarchical bullet list of the key ideas in this text.
+         - Use emojis in every bullet
+         - Use 2-space indentation per level
+         - Only use dash bullets (-)
+         - Do NOT add any extra text or explanation
+         \n\nText:\n${text}`,
+        { model: 'qwen/qwen3-14b:free' }
+      ).then(response => {
+        const aiText = response?.message?.content || response;
+        const lines = aiText.split('\n').filter(line => line.trim() !== '');
+        let html = '';
+
+        for (const line of lines) {
+          const match = line.match(/^(\s*)-\s+(.*)/);
+          if (!match) continue;
+
+          const indent = match[1].length;
+          const content = match[2].trim();
+          const level = Math.min(Math.floor(indent / 2), 3); // max 4 levels
+          html += `<div class="flowchart-node level-${level}">${content}</div>`;
+        }
+
+        resultEl.innerHTML = html || '<p>💡 No mindmap generated. Try again!</p>';
+      }).catch(err => {
+        const msg = err?.message || err?.error?.message || JSON.stringify(err);
+        resultEl.innerHTML = `<p>❌ Mindmap failed: ${msg}</p>`;
+      });
+    }
+  </script>
+</body>
+</html>
